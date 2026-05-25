@@ -25,9 +25,9 @@ Text to de-gravitize:
 ```{code_content}```
 """
 
-with st.sidebar:
-    st.header("Configuration")
+with st.expander("Configuration", expanded=True):
     api_key = st.text_input("Gemini API Key", type="password")
+    langsmith_api_key = st.text_input("LangSmith API Key (Optional)", type="password", help="Enable LangSmith tracing by providing your API key.")
     language = st.selectbox(
         "Language",
         ["Python", "JavaScript", "TypeScript", "Go", "Java", "C++"]
@@ -56,12 +56,22 @@ if st.button("Review Code", type="primary"):
     else:
         with st.spinner("Analyzing code..."):
             try:
-                # Set LangSmith Tracing via Streamlit Secrets
-                if "LANGSMITH_API_KEY" in st.secrets:
-                    os.environ["LANGSMITH_TRACING"] = st.secrets.get("LANGSMITH_TRACING", "true")
-                    os.environ["LANGSMITH_ENDPOINT"] = st.secrets.get("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
-                    os.environ["LANGSMITH_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
-                    os.environ["LANGSMITH_PROJECT"] = st.secrets.get("LANGSMITH_PROJECT", "codereview")
+                # Set LangSmith Tracing
+                if langsmith_api_key:
+                    os.environ["LANGCHAIN_TRACING_V2"] = "true"
+                    os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+                    os.environ["LANGCHAIN_API_KEY"] = langsmith_api_key
+                    os.environ["LANGCHAIN_PROJECT"] = "codereview"
+                elif "LANGSMITH_API_KEY" in st.secrets:
+                    os.environ["LANGCHAIN_TRACING_V2"] = st.secrets.get("LANGSMITH_TRACING", "true")
+                    os.environ["LANGCHAIN_ENDPOINT"] = st.secrets.get("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
+                    os.environ["LANGCHAIN_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
+                    os.environ["LANGCHAIN_PROJECT"] = st.secrets.get("LANGSMITH_PROJECT", "codereview")
+                elif "LANGCHAIN_API_KEY" in st.secrets:
+                    os.environ["LANGCHAIN_TRACING_V2"] = st.secrets.get("LANGCHAIN_TRACING_V2", "true")
+                    os.environ["LANGCHAIN_ENDPOINT"] = st.secrets.get("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
+                    os.environ["LANGCHAIN_API_KEY"] = st.secrets["LANGCHAIN_API_KEY"]
+                    os.environ["LANGCHAIN_PROJECT"] = st.secrets.get("LANGCHAIN_PROJECT", "codereview")
 
                 # Set the API key
                 os.environ["GOOGLE_API_KEY"] = api_key
