@@ -56,6 +56,13 @@ if st.button("Review Code", type="primary"):
     else:
         with st.spinner("Analyzing code..."):
             try:
+                # Set LangSmith Tracing via Streamlit Secrets
+                if "LANGSMITH_API_KEY" in st.secrets:
+                    os.environ["LANGSMITH_TRACING"] = st.secrets.get("LANGSMITH_TRACING", "true")
+                    os.environ["LANGSMITH_ENDPOINT"] = st.secrets.get("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
+                    os.environ["LANGSMITH_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
+                    os.environ["LANGSMITH_PROJECT"] = st.secrets.get("LANGSMITH_PROJECT", "codereview")
+
                 # Set the API key
                 os.environ["GOOGLE_API_KEY"] = api_key
                 
